@@ -18,7 +18,7 @@ Two things have to be controlled for or the number is meaningless:
 """
 import numpy as np
 
-import gloria
+import probai_course.probabilistic_ml.VAE.gloria as gloria
 
 WQPS = ['Chla', 'aCDOM440', 'TSS']
 
@@ -95,7 +95,7 @@ def synthetic_control(n=1436, k=12, seed=1):
     As d -> 0 this must approach ~0. Whatever it shows in the lowest bin is the
     estimator's own bias, and the GLORIA floor has to be read against it.
     """
-    import hydropt_flex as hf
+    import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
 
     wb = gloria.bands(hydropt_grid=True)
     _, fwd, _ = hf.build(wb)
@@ -136,7 +136,7 @@ CHL_METHOD_CLASS = {
 
 def stage_b(k=12):
     """Skill and floor by model-independent quality strata."""
-    from diagnose_misfit import fit_all, skill
+    from probai_course.probabilistic_ml.VAE.diagnose_misfit import fit_all, skill
 
     rrs, wqp, ids, meta = gloria.matchups(
         WQPS, extra_cols=['Chl_method', 'Optical_stability_of_water', 'Dataset_ID'],
@@ -168,8 +168,8 @@ def stage_b(k=12):
 def stage_c(epochs=300, k=12):
     """Retrain the VAE on the cleanest model-independent subset and read it against
     that subset's own floor."""
-    import vae
-    from diagnose_misfit import fit_all, skill
+    import probai_course.probabilistic_ml.VAE.vae as vae
+    from probai_course.probabilistic_ml.VAE.diagnose_misfit import fit_all, skill
 
     cls, meta = stage_b(k=k)
     rrs, wqp, ids, _ = gloria.matchups(

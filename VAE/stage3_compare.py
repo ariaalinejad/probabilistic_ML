@@ -8,10 +8,10 @@ while the VAE always returns an estimate.
 import numpy as np
 import torch
 
-import gloria
-import hydropt_flex as hf
-from diagnose_misfit import PARAMS, BOUND, skill
-from vae import train, evaluate, load_data, WQPS
+import probai_course.probabilistic_ml.VAE.gloria as gloria
+import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
+from probai_course.probabilistic_ml.VAE.diagnose_misfit import PARAMS, BOUND, skill
+from probai_course.probabilistic_ml.VAE.vae import train, evaluate, load_data, WQPS
 
 VARIANTS = [
     ('none',      'diag'),

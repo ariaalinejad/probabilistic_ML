@@ -23,8 +23,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import gloria
-from physics_decoder import HydroptDecoder
+import probai_course.probabilistic_ml.VAE.gloria as gloria
+from probai_course.probabilistic_ml.VAE.physics_decoder import HydroptDecoder
 
 WQPS = ['Chla', 'aCDOM440', 'TSS']
 
@@ -146,7 +146,7 @@ def residual_modes(rrs, wavebands, rank=4):
     Used to initialise the low-rank noise covariance. Uses only Rrs -- no labels -- so it
     stays consistent with unsupervised training.
     """
-    from diagnose_misfit import fit_all
+    from probai_course.probabilistic_ml.VAE.diagnose_misfit import fit_all
     _, model = fit_all(rrs, wavebands)
     r = (rrs - model) / rrs.mean(axis=1, keepdims=True)
     r = r[np.isfinite(r).all(axis=1)]
@@ -419,7 +419,7 @@ def lm_estimate(model, rrs_row, wavebands=None):
     the VAE sees. Defined here rather than imported from stage3_compare, which imports
     this module.
     """
-    import hydropt_flex as hf
+    import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
     wb = gloria.bands(hydropt_grid=True) if wavebands is None else wavebands
     const = {nm: model.decoder.constant(nm).item() for nm in model.decoder.learn}
     _, _, inv = hf.build(wb, **const)
@@ -543,7 +543,7 @@ def run(args=None, **overrides):
 
     if args.discrepancy != 'none':
         print('\nlearned constants (hydropt default in brackets):')
-        import hydropt_flex as hf
+        import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
         for nm in model.decoder.learn:
             print(f'  {nm:<16}{model.decoder.constant(nm).item():.5f}  '
                   f'[{hf.DEFAULTS[nm]:.5f}]')
