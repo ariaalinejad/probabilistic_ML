@@ -16,6 +16,8 @@ Discrepancy modes, chosen from the Stage 1 diagnosis:
   residual   'constants' plus a low-rank additive correction on log Rrs, regularised
              toward zero so the physics stays dominant
 """
+
+# %% Imports
 import argparse
 
 import matplotlib.pyplot as plt
@@ -23,12 +25,27 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import probai_course.probabilistic_ml.VAE.gloria as gloria
-from probai_course.probabilistic_ml.VAE.physics_decoder import HydroptDecoder
+import gloria as gloria
+from physics_decoder import HydroptDecoder
 
+# %% constants
 WQPS = ['Chla', 'aCDOM440', 'TSS']
 
+fig_folder = "/home/ariaa/smallSatLab/output_figures/physics_vae"
 
+save_figures = True
+
+DTYPE = torch.float64          # the degree-4 log-polynomial has little headroom in f32
+
+# generous physical box on log concentration. The polynomial overflows well outside any
+# real water (chl ~1e4 ug/L gives Rrs ~1e36), so clamp before it can poison gradients.
+LOG_CONC_MIN, LOG_CONC_MAX = np.log(1e-4), np.log(1e4)
+
+AXIS_LABEL = {'Chla': ('chl-a', r'$\mu$g/L'),
+              'aCDOM440': (r'$a_{CDOM}(440)$', '1/m'),
+              'TSS': ('TSS', 'mg/L')}
+
+# %% functions
 class Encoder(nn.Module):
     def __init__(self, n_bands, n_latent=3, width=256):
         super().__init__()
@@ -42,14 +59,6 @@ class Encoder(nn.Module):
         h = self.net(x)
         mu, log_sd = h[:, :self.n_latent], h[:, self.n_latent:]
         return mu, log_sd.clamp(-6., 2.)
-
-
-DTYPE = torch.float64          # the degree-4 log-polynomial has little headroom in f32
-
-# generous physical box on log concentration. The polynomial overflows well outside any
-# real water (chl ~1e4 ug/L gives Rrs ~1e36), so clamp before it can poison gradients.
-LOG_CONC_MIN, LOG_CONC_MAX = np.log(1e-4), np.log(1e4)
-
 
 class PhysicsVAE(nn.Module):
     def __init__(self, wavebands, z_loc, z_scale, discrepancy='constants', rank=2,
@@ -146,7 +155,7 @@ def residual_modes(rrs, wavebands, rank=4):
     Used to initialise the low-rank noise covariance. Uses only Rrs -- no labels -- so it
     stays consistent with unsupervised training.
     """
-    from probai_course.probabilistic_ml.VAE.diagnose_misfit import fit_all
+    from  diagnose_misfit import fit_all
     _, model = fit_all(rrs, wavebands)
     r = (rrs - model) / rrs.mean(axis=1, keepdims=True)
     r = r[np.isfinite(r).all(axis=1)]
@@ -247,11 +256,25 @@ def evaluate(model, data, n_samples=512, label=''):
           'width = log10 decades)')
     return out
 
+def plot_input_vs_output(model, data, n_show=3, seed=0):
+    X, R, _ = data
+    rrs = R.numpy()
+    rrs_hat, _ = reconstruct(model, X)
+    wb = gloria.bands(hydropt_grid=True)
 
-AXIS_LABEL = {'Chla': ('chl-a', r'$\mu$g/L'),
-              'aCDOM440': (r'$a_{CDOM}(440)$', '1/m'),
-              'TSS': ('TSS', 'mg/L')}
+    rng = np.random.default_rng(seed)
+    sub = rng.choice(len(rrs), min(n_show, len(rrs)), replace=False)
 
+    fig, axes = plt.subplots(3, 2)
+    for idx,i in enumerate(sub):
+        axes[idx,0].plot(wb, rrs[i], color='0.7', lw=3.7, alpha=.8)
+        axes[idx,1].plot(wb, rrs_hat[i], color='C0', lw=3.7, alpha=.55)
+        axes[idx,0].set_axis_off()
+        axes[idx,1].set_axis_off()
+
+    # fig.suptitle('Spectral closure of the physics decoder')
+    fig.tight_layout()
+    return fig
 
 def plot_retrieval(model, data, label='held-out', n_err=120, seed=0):
     """Retrieved vs in-situ, with 90% credible intervals on a subset of points.
@@ -329,7 +352,7 @@ def plot_closure(model, data, n_show=3, seed=0):
     ax.axhline(0, color='k', lw=1, ls='--')
     ax.set(xlabel='wavelength [nm]',
            ylabel=r'(model $-$ measured) / mean $R_{rs}$',
-           title='residual is systematic, not noise')
+           title='residual')
     ax.legend(fontsize=8)
 
     ax = axes[2]
@@ -419,7 +442,7 @@ def lm_estimate(model, rrs_row, wavebands=None):
     the VAE sees. Defined here rather than imported from stage3_compare, which imports
     this module.
     """
-    import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
+    import  hydropt_flex as hf
     wb = gloria.bands(hydropt_grid=True) if wavebands is None else wavebands
     const = {nm: model.decoder.constant(nm).item() for nm in model.decoder.learn}
     _, _, inv = hf.build(wb, **const)
@@ -528,36 +551,45 @@ def parse_args(argv=None):
     return args
 
 
-def run(args=None, **overrides):
-    """Train and report. Callable from a cell as run(epochs=100) or from the CLI."""
-    args = args or parse_args()
-    for k, v in overrides.items():
-        setattr(args, k, v)
+# %% run
 
-    print(f'physics-decoder VAE, discrepancy={args.discrepancy}, '
-          f'noise={args.noise}, beta={args.beta}')
-    model, val, tr = train(args.discrepancy, epochs=args.epochs, beta=args.beta,
-                           noise=args.noise, noise_rank=args.noise_rank)
-    evaluate(model, tr, label='train')
-    evaluate(model, val, label='held-out')
+# def run(args=None, **overrides):
+"""Train and report. Callable from a cell as run(epochs=100) or from the CLI."""
+# args = args or parse_args()
+# for k, v in overrides.items():
+#     setattr(args, k, v)
+args = parse_args()
 
-    if args.discrepancy != 'none':
-        print('\nlearned constants (hydropt default in brackets):')
-        import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
-        for nm in model.decoder.learn:
-            print(f'  {nm:<16}{model.decoder.constant(nm).item():.5f}  '
-                  f'[{hf.DEFAULTS[nm]:.5f}]')
+print(f'physics-decoder VAE, discrepancy={args.discrepancy}, '
+        f'noise={args.noise}, beta={args.beta}')
+model, val, tr = train(args.discrepancy, epochs=args.epochs, beta=args.beta,
+                        noise=args.noise, noise_rank=args.noise_rank)
+evaluate(model, tr, label='train')
+evaluate(model, val, label='held-out')
 
-    if not getattr(args, 'no_plots', False):
-        plot_retrieval(model, val, label='held-out')
-        plot_closure(model, val)
-        plot_latent_traversal(model, val)
-        if getattr(args, 'degeneracy', False):     # slow: opt in
-            plot_degeneracy(model, val)
-        plt.show()
-    return model, val, tr
+if args.discrepancy != 'none':
+    print('\nlearned constants (hydropt default in brackets):')
+    import  hydropt_flex as hf
+    for nm in model.decoder.learn:
+        print(f'  {nm:<16}{model.decoder.constant(nm).item():.5f}  '
+                f'[{hf.DEFAULTS[nm]:.5f}]')
+#%% plot
+if not getattr(args, 'no_plots', False):
+    fig0 = plot_retrieval(model, val, label='held-out')
+    fig1 = plot_closure(model, val)
+    fig2 = plot_latent_traversal(model, val)
+    fig3 = plot_input_vs_output(model, val)
+    if save_figures:
+        fig0.savefig(f'{fig_folder}/vae_retrievals.png', dpi=300)
+        fig1.savefig(f'{fig_folder}/vae_closure.png', dpi=300)
+        fig2.savefig(f'{fig_folder}/vae_latent_traversal.png', dpi=300)
+        fig3.savefig(f'{fig_folder}/vae_input_vs_output.png', dpi=300)
+    if getattr(args, 'degeneracy', False):     # slow: opt in
+        plot_degeneracy(model, val)
+    plt.show()
+# return model, val, tr
 
 
 # %% run
-if __name__ == '__main__':
-    model, val, tr = run()
+# if __name__ == '__main__':
+    # model, val, tr = run()
