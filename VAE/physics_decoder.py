@@ -16,7 +16,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
+import  hydropt_flex as hf
 
 PARAMS = ['phyto', 'cdom', 'nap']
 

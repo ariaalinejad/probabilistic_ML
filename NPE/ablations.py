@@ -23,8 +23,8 @@ os.environ.setdefault('KERAS_BACKEND', 'torch')
 import numpy as np                                                   # noqa: E402
 
 import data                                                          # noqa: E402
-import probai_course.probabilistic_ml.NPE.npe as npe                                                           # noqa: E402
-from probai_course.probabilistic_ml.NPE.evaluate import coverage, interval_width, skill                 # noqa: E402
+import probabilistic_ml.NPE.npe as npe                                                           # noqa: E402
+from probabilistic_ml.NPE.evaluate import coverage, interval_width, skill                 # noqa: E402
 
 
 class PCAFeatures:
@@ -40,7 +40,7 @@ class PCAFeatures:
         self.mean = self.std = None
 
     def fit(self, rrs):
-        from probai_course.probabilistic_ml.NPE.features import split_magnitude
+        from probabilistic_ml.NPE.features import split_magnitude
         shape, _ = split_magnitude(rrs)
         self.centre = shape.mean(axis=0)
         _, _, Vt = np.linalg.svd(shape - self.centre, full_matrices=False)
@@ -51,7 +51,7 @@ class PCAFeatures:
         return self
 
     def _raw(self, rrs):
-        from probai_course.probabilistic_ml.NPE.features import split_magnitude
+        from probabilistic_ml.NPE.features import split_magnitude
         shape, log_mag = split_magnitude(rrs)
         scores = (shape - self.centre) @ self.components.T
         cols = [scores] + ([log_mag[:, None]] if self.use_magnitude else [])
@@ -109,7 +109,7 @@ def run_variant(rrs, theta, groups, extractor_factory, n_splits=5, epochs=200,
 
 
 def compare(n_splits=5, epochs=200, num_samples=500, seed=0, **net_kwargs):
-    from probai_course.probabilistic_ml.NPE.features import SpectralFeatures
+    from probabilistic_ml.NPE.features import SpectralFeatures
 
     rrs, theta, ids, groups, meta = data.load()
 
@@ -152,7 +152,7 @@ def wqp_count_comparison(epochs=200, seed=0, n_splits=5):
     Secchi is the sparsest label; asking for it costs a third of the data. This is the
     only ablation that changes the dataset rather than the features.
     """
-    from probai_course.probabilistic_ml.NPE.features import SpectralFeatures
+    from probabilistic_ml.NPE.features import SpectralFeatures
 
     print('\n--- WQP set (changes the dataset size) ---')
     for wqps in (data.WQPS, ['Chla', 'TSS', 'aCDOM440']):

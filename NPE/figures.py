@@ -27,7 +27,7 @@ import matplotlib.ticker as mticker                                  # noqa: E40
 import numpy as np                                                   # noqa: E402
 
 import data                                                          # noqa: E402
-from probai_course.probabilistic_ml.NPE.evaluate import (cached_posteriors, coverage, label_noise_floor,  # noqa: E402
+from probabilistic_ml.NPE.evaluate import (cached_posteriors, coverage, label_noise_floor,  # noqa: E402
                       rank_statistics, skill)
 
 WQPS = data.WQPS

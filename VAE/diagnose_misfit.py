@@ -11,8 +11,8 @@ asks *which* assumption breaks.
 import os
 import numpy as np
 
-import probai_course.probabilistic_ml.VAE.gloria as gloria
-import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
+import  gloria as gloria
+import  hydropt_flex as hf
 
 PARAMS = ['phyto', 'cdom', 'nap']
 BOUND = 1E-6

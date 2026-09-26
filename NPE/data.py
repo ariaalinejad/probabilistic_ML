@@ -13,7 +13,7 @@ space and results stay comparable with the VAE's log-space metrics.
 import numpy as np
 from sklearn.model_selection import GroupKFold
 
-import probai_course.probabilistic_ml.NPE.gloria as gloria
+import probabilistic_ml.NPE.gloria as gloria
 
 WQPS = gloria.WQP_COLUMNS                        # Chla, TSS, aCDOM440, Secchi_depth
 GROUP_COL = 'Dataset_ID'

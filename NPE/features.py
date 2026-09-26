@@ -19,7 +19,7 @@ every calibration number downstream.
 """
 import numpy as np
 
-from probai_course.probabilistic_ml.NPE.edaa import BlindEDAA
+from probabilistic_ml.NPE.edaa import BlindEDAA
 
 N_COMPONENTS = 5
 
@@ -127,7 +127,7 @@ def endmember_max_correlation(E):
 
 def selftest(p=N_COMPONENTS, seed=0):
     """Check the EDAA fit is well-formed on the real GLORIA matchups."""
-    import probai_course.probabilistic_ml.NPE.gloria as gloria
+    import probabilistic_ml.NPE.gloria as gloria
 
     rrs, _, _ = gloria.matchups(gloria.WQP_COLUMNS, hydropt_grid=True, drop_gaps=True)
     feat = SpectralFeatures(p=p, seed=seed)

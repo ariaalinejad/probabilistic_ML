@@ -12,9 +12,9 @@ isolated label-error estimate.
 import numpy as np
 import pandas as pd
 
-import probai_course.probabilistic_ml.VAE.gloria as gloria
-import probai_course.probabilistic_ml.VAE.hydropt_flex as hf
-from probai_course.probabilistic_ml.VAE.diagnose_misfit import fit_all, skill, PARAMS, BOUND
+import  gloria as gloria
+import  hydropt_flex as hf
+from  diagnose_misfit import fit_all, skill, PARAMS, BOUND
 
 STRATA = ['Water_type', 'Water_body_type', 'Optical_stability_of_water',
           'Chl_method', 'aCDOM_method', 'Dataset_ID']

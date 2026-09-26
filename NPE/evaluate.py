@@ -25,7 +25,7 @@ os.environ.setdefault('KERAS_BACKEND', 'torch')
 import numpy as np                                                   # noqa: E402
 
 import data                                                          # noqa: E402
-import probai_course.probabilistic_ml.NPE.npe as npe                                                           # noqa: E402
+import probabilistic_ml.NPE.npe as npe                                                           # noqa: E402
 
 WQPS = data.WQPS
 

@@ -6,7 +6,7 @@ from hydropt.bio_optics import H2O_IOP_DEFAULT
 from hydropt.bio_optics import a_phyto_base_HSI
 import lmfit
 
-import probai_course.probabilistic_ml.VAE.gloria as gloria
+import  gloria as gloria
 # %% setup and definitions
 
 gloria_data_dir = gloria.GLORIA_DIR

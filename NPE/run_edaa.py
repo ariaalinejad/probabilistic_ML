@@ -8,7 +8,7 @@ import xarray as xr
 import config
 import interpret_endmembers as ie
 import visualize_owt as vo
-from probai_course.probabilistic_ml.NPE.edaa import BlindEDAA
+from probabilistic_ml.NPE.edaa import BlindEDAA
 from spectra_selection import (band_mask, filter_valid_spectra, normalize,
                                select_spectra)
 

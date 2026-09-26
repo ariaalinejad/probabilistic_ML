@@ -28,7 +28,7 @@ import keras                                                         # noqa: E40
 import bayesflow as bf                                               # noqa: E402
 
 import data                                                          # noqa: E402
-from probai_course.probabilistic_ml.NPE.features import SpectralFeatures, N_COMPONENTS                  # noqa: E402
+from probabilistic_ml.NPE.features import SpectralFeatures, N_COMPONENTS                  # noqa: E402
 
 WQPS = data.WQPS
 
